@@ -11,6 +11,10 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 3px solid transparent;
+        }
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -21,6 +25,9 @@
         }
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
+        }
+        .selected-card {
+            border-color: #22c55e; /* green-500 */
         }
     </style>
 </head>
@@ -43,6 +50,7 @@
                     <textarea id="form-model" placeholder="Modelo do produto" class="w-full p-3 border rounded-md" required></textarea>
                     <input type="number" step="0.01" id="form-price" placeholder="Valor (ex: 2500.00)" class="w-full p-3 border rounded-md" required>
                     <input type="url" id="form-image" placeholder="URL da Imagem" class="w-full p-3 border rounded-md" required>
+                     <input type="url" id="form-link" placeholder="URL do Produto" class="w-full p-3 border rounded-md" required>
                     <div>
                         <span class="text-gray-700 font-medium">Tipo de Frete:</span>
                         <div class="mt-2 space-x-4">
@@ -121,11 +129,12 @@
 
         // Dados Iniciais dos Produtos
         const initialProducts = [
-            { id: 'elgin', title: 'Ar Condicionado Elgin', model: 'Ar Condicionado Split HW Eco II Inverter Connect Elgin 12.000 Btus QeF R-32.', price: 2518, image: 'https://http2.mlstatic.com/D_NQ_NP_776965-MLA83475032159_042025-O.webp', type: 'checkbox', freight: 'com Frete Incluso', checked: false },
-            { id: 'electrolux', title: 'Ar Condicionado Electrolux', model: 'Ar-condicionado Split Invert 12000 Btus Electrolux Frio 220v.', price: 2649, image: 'https://i.zst.com.br/thumbs/13/3a/15/-1162693128.jpg', type: 'checkbox', freight: 'com Frete Incluso', checked: true },
-            { id: 'projector', title: 'Projetor Epson', model: 'Projetor Epson Powerlite E20 Xga 3400 Lumens Cor Branco.', price: 3200, image: 'https://http2.mlstatic.com/D_NQ_NP_2X_788975-MLB79106310800_092024-F.webp', type: 'checkbox', freight: 'com Frete Grátis', checked: true },
-            { id: 'brother', title: 'Impressora Brother', model: 'Brother DCP-L2540DW Multifuncional com Wi-Fi.', image: 'https://http2.mlstatic.com/D_NQ_NP_2X_673012-MLA84547559318_052025-F.webp', type: 'radio', options: [ { name: 'Bivolt', price: 4519 }, { name: '127V', price: 2341, checked: true }, { name: '220V', price: 3144 } ] },
-            { id: 'notebook', title: 'Notebook Dell', model: 'Notebook dell 3480 core i5 8gb ram ssd 240gb mod. p89g.', price: 2085, image: 'https://a-static.mlcdn.com.br/800x560/notebook-dell-3480-core-i5-8gb-ram-ssd-240gb-mod-p89g/biguazulecommerce/914p/36a07e25d491267c8f393dbe3788d6e1.jpeg', type: 'checkbox', freight: 'com Frete Incluso', checked: true },
+            { id: 'elgin', title: 'Ar Condicionado Elgin', model: 'Ar Condicionado Split HW Eco II Inverter Connect Elgin 12.000 Btus QeF R-32.', price: 2518, image: 'https://http2.mlstatic.com/D_NQ_NP_776965-MLA83475032159_042025-O.webp', link: 'https://www.mercadolivre.com.br/ar-condicionado-split-hw-eco-ii-inverter-connect-elgin-12000-btus-qef-220v-r-32/p/MLB47639748', type: 'checkbox', freight: 'com Frete Incluso', checked: false },
+            { id: 'electrolux', title: 'Ar Condicionado Electrolux', model: 'Ar-condicionado Split Invert 12000 Btus Electrolux Frio 220v.', price: 2649, image: 'https://i.zst.com.br/thumbs/13/3a/15/-1162693128.jpg', link: 'https://produto.mercadolivre.com.br/MLB-3507114041-ar-condicionado-split-invert-12000-btus-electrolux-frio-220v-_JM', type: 'checkbox', freight: 'com Frete Incluso', checked: true },
+            { id: 'projector', title: 'Projetor Epson', model: 'Projetor Epson Powerlite E20 Xga 3400 Lumens Cor Branco.', price: 3200, image: 'https://http2.mlstatic.com/D_NQ_NP_2X_788975-MLB79106310800_092024-F.webp', link: 'https://www.mercadolivre.com.br/projetor-epson-powerlite-e20-xga-3400-lumens-cor-branco/p/MLB19728248', type: 'checkbox', freight: 'com Frete Grátis', checked: true },
+            { id: 'brother', title: 'Impressora Brother', model: 'Brother DCP-L2540DW Multifuncional com Wi-Fi.', image: 'https://http2.mlstatic.com/D_NQ_NP_2X_673012-MLA84547559318_052025-F.webp', link: 'https://www.mercadolivre.com.br/brother-dcp-l2540dw-multifuncional-mono-laser-duplex-wi-fi-cor-preto/p/MLB15136770', type: 'radio', options: [ { name: 'Bivolt', price: 4519 }, { name: '127V', price: 2341, checked: true }, { name: '220V', price: 3144 } ] },
+            { id: 'notebook', title: 'Notebook Dell', model: 'Notebook dell 3480 core i5 8gb ram ssd 240gb mod. p89g.', price: 2085, image: 'https://a-static.mlcdn.com.br/800x560/notebook-dell-3480-core-i5-8gb-ram-ssd-240gb-mod-p89g/biguazulecommerce/914p/36a07e25d491267c8f393dbe3788d6e1.jpeg', link: 'https://www.magazineluiza.com.br/notebook-dell-3480-core-i5-8gb-ram-ssd-240gb-mod-p89g/p/bd4ec2a2cf/in/nodl/', type: 'checkbox', freight: 'com Frete Incluso', checked: true },
+            { id: 'notebook-asus', title: 'Notebook Asus', model: 'Notebook Asus Celeron N4020 15.6 128gb 4gb ram - W11h X515ma-br933ws', price: 1999, image: 'https://http2.mlstatic.com/D_NQ_NP_2X_898533-MLU73046704595_112023-F.webp', link: 'https://www.mercadolivre.com.br/notebook-asus-x515ma-br933ws-cinza-156-intel-celeron-n4020-4gb-de-ram-128gb-ssd-intel-uhd-graphics-600-1366x768px-windows-11-home/p/MLB21659858', type: 'checkbox', freight: 'com Frete Incluso', checked: false },
         ];
         
         // --- Funções ---
@@ -135,14 +144,18 @@
         }
 
         function createCardHTML(product) {
-            let selectorHTML = '';
+            let footerHTML = '';
             const cardId = `card-${product.id}`;
 
             if (product.type === 'checkbox') {
-                selectorHTML = `
-                    <div class="p-6 bg-gray-50 border-t flex justify-end items-center space-x-3">
-                        <label for="select-${product.id}" class="font-semibold text-gray-700 cursor-pointer">Selecionar</label>
-                        <input type="checkbox" id="select-${product.id}" class="product-selector" data-name="${product.title}" data-price="${product.price}" ${product.checked ? 'checked' : ''}>
+                const linkButton = product.link ? `<a href="${product.link}" target="_blank" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors text-sm font-semibold">Ver Produto</a>` : '<div></div>';
+                footerHTML = `
+                    <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
+                        ${linkButton}
+                        <div class="flex items-center space-x-3">
+                            <label for="select-${product.id}" class="font-semibold text-gray-700 cursor-pointer">Selecionar</label>
+                            <input type="checkbox" id="select-${product.id}" class="product-selector" data-name="${product.title}" data-price="${product.price}" ${product.checked ? 'checked' : ''}>
+                        </div>
                     </div>`;
             } else if (product.type === 'radio') {
                 const optionsHTML = product.options.map(opt => `
@@ -151,15 +164,18 @@
                         <input type="radio" name="printer_option" id="select-${product.id}-${opt.name.toLowerCase()}" class="product-selector" data-name="${product.title} (${opt.name})" data-price="${opt.price}" ${opt.checked ? 'checked' : ''}>
                     </label>
                 `).join('');
-                selectorHTML = `
+                const linkButton = product.link ? `<div class="mt-4"><a href="${product.link}" target="_blank" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors text-sm font-semibold w-full block text-center">Ver Produto</a></div>` : '';
+
+                footerHTML = `
                     <div class="p-6 bg-gray-50 border-t">
                         <span class="font-semibold text-gray-700 block mb-3">Selecionar Voltagem:</span>
                         <div class="space-y-2">${optionsHTML}</div>
+                        ${linkButton}
                     </div>`;
             }
 
             return `
-                <div id="${cardId}" class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 card-hover flex flex-col relative">
+                <div id="${cardId}" class="card bg-white rounded-xl shadow-lg overflow-hidden card-hover flex flex-col relative">
                     <button class="delete-btn absolute top-3 right-3 text-gray-400 hover:text-red-500 z-10 p-1"><i class="fas fa-trash-alt"></i></button>
                     <div class="p-6 flex-grow">
                         <div class="flex items-center mb-4">
@@ -169,9 +185,17 @@
                         <p class="text-gray-600 text-sm">${product.model}</p>
                         ${product.type === 'checkbox' ? `<div class="flex justify-between items-center font-bold text-base mt-4"><span>Valor ${product.freight}:</span><span class="text-blue-600 text-lg">${formatCurrency(product.price)}</span></div>` : ''}
                     </div>
-                    ${selectorHTML}
+                    ${footerHTML}
                 </div>
             `;
+        }
+        
+        function updateCardStyles() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const isSelected = card.querySelector('.product-selector:checked');
+                card.classList.toggle('selected-card', !!isSelected);
+            });
         }
 
         function renderInitialCards() {
@@ -197,6 +221,7 @@
             summaryItems.innerHTML = itemsHTML;
             summaryTotal.textContent = formatCurrency(currentTotal);
             summaryHR.classList.toggle('hidden', !itemsHTML);
+            updateCardStyles();
         }
 
         // --- Event Listeners ---
@@ -212,6 +237,7 @@
                 model: document.getElementById('form-model').value,
                 price: parseFloat(document.getElementById('form-price').value),
                 image: document.getElementById('form-image').value,
+                link: document.getElementById('form-link').value,
                 type: 'checkbox',
                 freight: document.querySelector('input[name="frete"]:checked').value,
                 checked: true,
@@ -236,7 +262,7 @@
         productGrid.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.delete-btn');
             if (deleteBtn) {
-                cardToDelete = deleteBtn.closest('.flex.flex-col.relative');
+                cardToDelete = deleteBtn.closest('.card');
                 deleteConfirmModal.classList.remove('hidden');
                 deleteError.classList.add('hidden');
                 deletePasswordInput.value = '';
